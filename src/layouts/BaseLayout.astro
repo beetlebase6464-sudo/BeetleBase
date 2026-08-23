@@ -1,0 +1,215 @@
+---
+import '@/styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  ogImage?: string;
+}
+
+const {
+  title,
+  description = 'クワガタ・カブトムシのブリーダー向け血統管理・図鑑プラットフォーム',
+  ogImage = '/images/og-default.png',
+} = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content={description} />
+  <link rel="canonical" href={canonicalURL} />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+  <!-- OGP -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content={canonicalURL} />
+  <meta property="og:title" content={`${title} | BeetleBase`} />
+  <meta property="og:description" content={description} />
+  <meta property="og:image" content={ogImage} />
+  <meta property="og:locale" content="ja_JP" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <title>{title} | BeetleBase</title>
+
+  <!-- テーマ初期化（FOUC防止） -->
+  <script is:inline>
+    (function () {
+      const saved = localStorage.getItem('bb-theme');
+      if (saved === 'dark' || saved === 'light') {
+        document.documentElement.setAttribute('data-theme', saved);
+      }
+    })();
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="/" class="logo" aria-label="BeetleBase トップ">
+        <span class="logo-icon">🪲</span>
+        <span class="logo-text">BeetleBase</span>
+      </a>
+      <nav class="global-nav" aria-label="グローバルナビゲーション">
+        <a href="/zukan">図鑑</a>
+        <a href="/guides">飼育ガイド</a>
+        <a href="/products">関連商品</a>
+        <a href="/pedigree">血統DB</a>
+        <a href="/dashboard">マイページ</a>
+      </nav>
+      <button id="theme-toggle" class="btn-icon" aria-label="テーマ切替">
+        <span class="icon-sun">☀</span>
+        <span class="icon-moon">☾</span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <slot />
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p class="footer-brand">🪲 BeetleBase</p>
+      <nav class="footer-nav" aria-label="フッターナビゲーション">
+        <a href="/about">このサイトについて</a>
+        <a href="/terms">利用規約</a>
+        <a href="/privacy">プライバシー</a>
+        <a href="/disclaimer">免責事項</a>
+        <a href="/contact">お問い合わせ</a>
+      </nav>
+      <p class="footer-disclaimer">
+        規制情報は参考情報です。最新の法令は各自でご確認ください。
+      </p>
+      <p class="footer-copy">&copy; {new Date().getFullYear()} BeetleBase</p>
+    </div>
+  </footer>
+
+  <script>
+    const toggle = document.getElementById('theme-toggle');
+    toggle?.addEventListener('click', () => {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      localStorage.setItem('bb-theme', next);
+    });
+  </script>
+</body>
+</html>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--clr-bg-card);
+    border-bottom: 1px solid var(--clr-border);
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-lg);
+    padding-block: var(--space-md);
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--clr-text);
+    text-decoration: none;
+  }
+
+  .logo-icon { font-size: 1.4rem; }
+
+  .global-nav {
+    display: flex;
+    gap: var(--space-lg);
+    margin-inline-start: auto;
+  }
+
+  .global-nav a {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--clr-text-muted);
+  }
+
+  .global-nav a:hover { color: var(--clr-amber); text-decoration: none; }
+
+  .btn-icon {
+    background: none;
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-sm);
+    padding: var(--space-xs) var(--space-sm);
+    cursor: pointer;
+    color: var(--clr-text-muted);
+    line-height: 1;
+    font-size: 1rem;
+  }
+
+  /* テーマ別アイコン切替 */
+  [data-theme="dark"] .icon-sun,
+  :root:not([data-theme="light"]) .icon-moon { display: none; }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) .icon-sun { display: none; }
+    :root:not([data-theme]) .icon-moon { display: inline; }
+  }
+
+  .icon-moon { display: none; }
+  [data-theme="dark"] .icon-moon { display: inline; }
+  [data-theme="dark"] .icon-sun { display: none; }
+
+  /* Footer */
+  .site-footer {
+    margin-top: var(--space-3xl);
+    border-top: 1px solid var(--clr-border);
+    background: var(--clr-bg-subtle);
+  }
+
+  .footer-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-md);
+    padding-block: var(--space-xl);
+    text-align: center;
+  }
+
+  .footer-brand {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+
+  .footer-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-md);
+  }
+
+  .footer-nav a {
+    font-size: 0.85rem;
+    color: var(--clr-text-muted);
+  }
+
+  .footer-disclaimer {
+    font-size: 0.8rem;
+    color: var(--clr-text-muted);
+    max-width: 480px;
+  }
+
+  .footer-copy {
+    font-size: 0.8rem;
+    color: var(--clr-text-muted);
+  }
+</style>

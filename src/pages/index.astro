@@ -1,0 +1,336 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="トップ"
+  description="クワガタ・カブトムシのブリーダー向け。図鑑・飼育ガイド・血統管理・個体ID制度をまとめた総合プラットフォーム。"
+>
+  <!-- ヒーロー -->
+  <section class="hero">
+    <div class="container hero-inner">
+      <div class="hero-text">
+        <p class="hero-eyebrow">民間初の昆虫個体識別ID制度</p>
+        <h1 class="hero-headline">ブリーダーのための<br />血統管理プラットフォーム</h1>
+        <p class="hero-body">
+          クワガタ・カブトムシの血統情報を一元管理。<br />
+          個体IDで信頼性のある血統証明を、図鑑と飼育ガイドで知識を。
+        </p>
+        <div class="hero-actions">
+          <a href="/pedigree/register" class="btn btn-primary">個体を登録する</a>
+          <a href="/zukan" class="btn btn-secondary">図鑑を見る</a>
+        </div>
+      </div>
+      <div class="hero-badge-demo" aria-hidden="true">
+        <div class="specimen-label">
+          <div class="label-header">
+            <span class="label-site">🪲 BeetleBase</span>
+            <span class="label-category">クワガタ</span>
+          </div>
+          <div class="label-species">ホペイオオクワガタ</div>
+          <div class="label-scientific">Dorcus hopei hopei</div>
+          <div class="label-id">HOPEY-YAMADA042-001</div>
+          <div class="label-meta">
+            <span>♂ 78mm</span>
+            <span>F2</span>
+            <span>2026.04.15 羽化</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 機能紹介 -->
+  <section class="features">
+    <div class="container">
+      <h2 class="section-title">主な機能</h2>
+      <div class="feature-grid">
+        <article class="feature-card">
+          <div class="feature-icon">📖</div>
+          <h3>昆虫図鑑</h3>
+          <p>国産・外国産の主要種を網羅。規制情報・学名・飼育難易度も掲載。</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">🌱</div>
+          <h3>飼育ガイド</h3>
+          <p>温度・湿度・マット種類から産卵セットまで、初心者〜上級者向け解説。</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">🏷️</div>
+          <h3>個体ID制度</h3>
+          <p>種コード＋ブリーダーコード＋連番でユニークIDを発行。QRコードで個体ラベルを印刷可能。</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">🌳</div>
+          <h3>血統DB</h3>
+          <p>父・母・子の関係を視覚的な血統ツリーで管理。写真付きで信頼性を担保。</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">🔄</div>
+          <h3>所有権移転</h3>
+          <p>売買時は双方承認制で移転履歴を記録。改ざんコストを最大化した設計。</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">🛒</div>
+          <h3>関連商品</h3>
+          <p>楽天・Yahoo!ショッピングから飼育用品の相場をリアルタイム取得。</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 種別クイックアクセス -->
+  <section class="quick-access">
+    <div class="container">
+      <h2 class="section-title">カテゴリから探す</h2>
+      <div class="category-grid">
+        <a href="/zukan?category=クワガタ&origin=国産" class="category-card">
+          <div class="category-tag origin-domestic">国産</div>
+          <div class="category-name">クワガタ</div>
+        </a>
+        <a href="/zukan?category=クワガタ&origin=外国産" class="category-card">
+          <div class="category-tag origin-foreign">外国産</div>
+          <div class="category-name">クワガタ</div>
+        </a>
+        <a href="/zukan?category=カブト&origin=国産" class="category-card">
+          <div class="category-tag origin-domestic">国産</div>
+          <div class="category-name">カブト</div>
+        </a>
+        <a href="/zukan?category=カブト&origin=外国産" class="category-card">
+          <div class="category-tag origin-foreign">外国産</div>
+          <div class="category-name">カブト</div>
+        </a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* ── ヒーロー ── */
+  .hero {
+    padding-block: var(--space-3xl);
+    background: linear-gradient(135deg, var(--clr-bg) 0%, var(--clr-bg-subtle) 100%);
+  }
+
+  .hero-inner {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--space-2xl);
+    align-items: center;
+  }
+
+  .hero-eyebrow {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--clr-amber);
+    margin-bottom: var(--space-sm);
+  }
+
+  .hero-headline {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    margin-bottom: var(--space-md);
+    color: var(--clr-text);
+  }
+
+  .hero-body {
+    font-size: 1.05rem;
+    color: var(--clr-text-muted);
+    margin-bottom: var(--space-xl);
+    line-height: 1.8;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.7em 1.5em;
+    border-radius: var(--radius-md);
+    font-weight: 700;
+    font-size: 0.95rem;
+    transition: all var(--transition);
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .btn-primary {
+    background: var(--clr-amber);
+    color: #fff;
+    border: 2px solid var(--clr-amber);
+  }
+
+  .btn-primary:hover {
+    background: var(--clr-amber-light);
+    border-color: var(--clr-amber-light);
+    text-decoration: none;
+    color: #fff;
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--clr-forest);
+    border: 2px solid var(--clr-forest);
+  }
+
+  .btn-secondary:hover {
+    background: var(--clr-forest);
+    color: #fff;
+    text-decoration: none;
+  }
+
+  /* ── 標本ラベルデモ ── */
+  .specimen-label {
+    background: var(--clr-bg-card);
+    border: 2px solid var(--clr-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-lg);
+    min-width: 240px;
+    box-shadow: 4px 4px 0 var(--clr-border);
+    font-family: var(--font-mono);
+  }
+
+  .label-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-sm);
+    padding-bottom: var(--space-sm);
+    border-bottom: 1px solid var(--clr-border);
+  }
+
+  .label-site { font-size: 0.75rem; color: var(--clr-text-muted); }
+  .label-category {
+    font-size: 0.7rem;
+    background: var(--clr-forest);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+
+  .label-species {
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+
+  .label-scientific {
+    font-style: italic;
+    font-size: 0.78rem;
+    color: var(--clr-text-muted);
+    margin-bottom: var(--space-md);
+  }
+
+  .label-id {
+    background: var(--clr-amber);
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-sm);
+    margin-bottom: var(--space-sm);
+    letter-spacing: 0.05em;
+  }
+
+  .label-meta {
+    display: flex;
+    gap: var(--space-sm);
+    font-size: 0.75rem;
+    color: var(--clr-text-muted);
+  }
+
+  /* ── セクション共通 ── */
+  .features, .quick-access {
+    padding-block: var(--space-3xl);
+  }
+
+  .section-title {
+    font-size: 1.6rem;
+    margin-bottom: var(--space-xl);
+    color: var(--clr-text);
+  }
+
+  /* ── 機能グリッド ── */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-lg);
+  }
+
+  .feature-card {
+    background: var(--clr-bg-card);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-xl);
+  }
+
+  .feature-icon { font-size: 2rem; margin-bottom: var(--space-md); }
+
+  .feature-card h3 {
+    font-size: 1.1rem;
+    margin-bottom: var(--space-sm);
+  }
+
+  .feature-card p {
+    font-size: 0.9rem;
+    color: var(--clr-text-muted);
+    line-height: 1.6;
+  }
+
+  /* ── カテゴリグリッド ── */
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-md);
+  }
+
+  .category-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-xl);
+    background: var(--clr-bg-card);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    transition: all var(--transition);
+  }
+
+  .category-card:hover {
+    border-color: var(--clr-amber);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--clr-amber) 15%, transparent);
+    text-decoration: none;
+    transform: translateY(-2px);
+  }
+
+  .category-tag {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 999px;
+  }
+
+  .origin-domestic { background: var(--clr-forest); color: #fff; }
+  .origin-foreign  { background: var(--clr-amber);  color: #fff; }
+
+  .category-name {
+    font-family: var(--font-serif);
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--clr-text);
+  }
+
+  /* ── レスポンシブ ── */
+  @media (max-width: 768px) {
+    .hero-inner { grid-template-columns: 1fr; }
+    .hero-badge-demo { display: none; }
+    .category-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
