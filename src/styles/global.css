@@ -3,26 +3,26 @@
    トークン定義 → Google Fonts → リセット → ベース
    ──────────────────────────────────────────────────────────── */
 
-@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600;700&family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap');
 
 /* ── ライトモード（デフォルト） ── */
 :root {
   /* ブランドカラー */
-  --clr-amber:        #A36800;
-  --clr-amber-light:  #C8890A;
-  --clr-amber-muted:  #7A4F00;
-  --clr-forest:       #2A5535;
-  --clr-forest-light: #3A6E47;
+  --clr-amber:        #E8820C;
+  --clr-amber-light:  #F5A030;
+  --clr-amber-muted:  #C06800;
+  --clr-forest:       #3A8C52;
+  --clr-forest-light: #4EAA68;
 
   /* サーフェス */
-  --clr-bg:           #F1F4EE;
+  --clr-bg:           #FAFBF7;
   --clr-bg-card:      #FFFFFF;
-  --clr-bg-subtle:    #E6EAE1;
-  --clr-border:       #C8D0C0;
+  --clr-bg-subtle:    #F0F4EB;
+  --clr-border:       #D8E4CC;
 
   /* テキスト */
-  --clr-text:         #1A2B1C;
-  --clr-text-muted:   #5A6B5C;
+  --clr-text:         #2C3A2E;
+  --clr-text-muted:   #6B7D6E;
   --clr-text-on-amber:#FFFFFF;
 
   /* ステータス */
@@ -31,7 +31,7 @@
   --clr-error:        #C0392B;
 
   /* タイポグラフィ */
-  --font-serif:  'Noto Serif JP', 'Georgia', serif;
+  --font-serif:  'M PLUS Rounded 1c', 'Noto Sans JP', sans-serif;
   --font-sans:   'Noto Sans JP', 'Helvetica Neue', sans-serif;
   --font-mono:   'JetBrains Mono', 'Courier New', monospace;
 
@@ -46,9 +46,10 @@
 
   /* レイアウト */
   --max-width: 1200px;
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
 
   /* トランジション */
   --transition: 200ms ease;
@@ -57,31 +58,31 @@
 /* ── ダークモード（システム設定） ── */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --clr-bg:         #0D1A0F;
-    --clr-bg-card:    #152518;
-    --clr-bg-subtle:  #1C2F1E;
-    --clr-border:     #2E4530;
-    --clr-text:       #DDE8D8;
-    --clr-text-muted: #8BAA8E;
-    --clr-amber:      #D4900A;
-    --clr-amber-light:#F0A820;
-    --clr-forest:     #4A8B5A;
-    --clr-forest-light:#5AA86A;
+    --clr-bg:         #141A12;
+    --clr-bg-card:    #1E2A1A;
+    --clr-bg-subtle:  #253020;
+    --clr-border:     #344A2A;
+    --clr-text:       #E2ECD8;
+    --clr-text-muted: #90A888;
+    --clr-amber:      #F0920E;
+    --clr-amber-light:#F5B040;
+    --clr-forest:     #52B06A;
+    --clr-forest-light:#68C882;
   }
 }
 
 /* ── ダークモード（明示的トグル） ── */
 :root[data-theme="dark"] {
-  --clr-bg:         #0D1A0F;
-  --clr-bg-card:    #152518;
-  --clr-bg-subtle:  #1C2F1E;
-  --clr-border:     #2E4530;
-  --clr-text:       #DDE8D8;
-  --clr-text-muted: #8BAA8E;
-  --clr-amber:      #D4900A;
-  --clr-amber-light:#F0A820;
-  --clr-forest:     #4A8B5A;
-  --clr-forest-light:#5AA86A;
+  --clr-bg:         #141A12;
+  --clr-bg-card:    #1E2A1A;
+  --clr-bg-subtle:  #253020;
+  --clr-border:     #344A2A;
+  --clr-text:       #E2ECD8;
+  --clr-text-muted: #90A888;
+  --clr-amber:      #F0920E;
+  --clr-amber-light:#F5B040;
+  --clr-forest:     #52B06A;
+  --clr-forest-light:#68C882;
 }
 
 /* ── リセット ── */
