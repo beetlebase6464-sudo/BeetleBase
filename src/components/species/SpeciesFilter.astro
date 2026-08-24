@@ -1,0 +1,189 @@
+---
+/**
+ * SpeciesFilter
+ * 図鑑一覧のフィルターUI。
+ * 状態はURLパラメータで管理するため、サーバーサイドと完全に同期できる。
+ */
+import type { SpeciesFilter } from '@/lib/species';
+
+interface Props {
+  current: SpeciesFilter;
+  counts: {
+    all: number;
+    kuwagata: number;
+    kabuto: number;
+    domestic: number;
+    foreign: number;
+  };
+}
+
+const { current, counts } = Astro.props;
+
+// 現在のURLパラメータを保ちつつ特定キーを上書きするヘルパー
+function buildUrl(overrides: Record<string, string | null>): string {
+  const base = new URLSearchParams();
+  if (current.category) base.set('category', current.category);
+  if (current.origin)   base.set('origin',   current.origin);
+  if (current.query)    base.set('q',         current.query);
+
+  for (const [key, val] of Object.entries(overrides)) {
+    if (val === null) base.delete(key);
+    else base.set(key, val);
+  }
+
+  const str = base.toString();
+  return `/zukan${str ? `?${str}` : ''}`;
+}
+---
+
+<div class="filter-bar">
+  <!-- 1行目: カテゴリ + 産地フィルター -->
+  <div class="filter-row">
+    <div class="filter-group">
+      <a href={buildUrl({ category: null, origin: null })}
+         class:list={['filter-btn', !current.category && 'active']}>
+        すべて <span class="count">{counts.all}</span>
+      </a>
+      <a href={buildUrl({ category: 'クワガタ' })}
+         class:list={['filter-btn', current.category === 'クワガタ' && 'active']}>
+        クワガタ <span class="count">{counts.kuwagata}</span>
+      </a>
+      <a href={buildUrl({ category: 'カブト' })}
+         class:list={['filter-btn', current.category === 'カブト' && 'active']}>
+        カブト <span class="count">{counts.kabuto}</span>
+      </a>
+    </div>
+
+    <div class="filter-divider" aria-hidden="true"></div>
+
+    <div class="filter-group">
+      <a href={buildUrl({ origin: null })}
+         class:list={['filter-btn', !current.origin && 'active']}>
+        すべて
+      </a>
+      <a href={buildUrl({ origin: '国産' })}
+         class:list={['filter-btn', current.origin === '国産' && 'active']}>
+        国産 <span class="count">{counts.domestic}</span>
+      </a>
+      <a href={buildUrl({ origin: '外国産' })}
+         class:list={['filter-btn', current.origin === '外国産' && 'active']}>
+        外国産 <span class="count">{counts.foreign}</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- 2行目: 検索窓（横幅いっぱい） -->
+  <form method="get" action="/zukan" class="search-form">
+    {current.category && <input type="hidden" name="category" value={current.category} />}
+    {current.origin   && <input type="hidden" name="origin"   value={current.origin} />}
+    <input
+      type="search"
+      name="q"
+      value={current.query ?? ''}
+      placeholder="和名・学名で検索（例: オオクワガタ / Dorcus）"
+      class="search-input"
+    />
+    <button type="submit" class="search-btn">検索</button>
+  </form>
+</div>
+
+<style>
+  .filter-bar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    padding: var(--space-lg);
+    background: var(--clr-bg-card);
+    border: 2px solid var(--clr-border);
+    border-radius: var(--radius-xl);
+    margin-bottom: var(--space-xl);
+  }
+
+  .filter-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+  }
+
+  .filter-divider {
+    width: 1px;
+    height: 24px;
+    background: var(--clr-border);
+    flex-shrink: 0;
+  }
+
+  .filter-group {
+    display: flex;
+    gap: var(--space-xs);
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--clr-text-muted);
+    background: var(--clr-bg-subtle);
+    text-decoration: none;
+    transition: all 150ms ease;
+    border: 2px solid transparent;
+  }
+
+  .filter-btn:hover {
+    color: var(--clr-forest);
+    background: color-mix(in srgb, var(--clr-forest) 10%, transparent);
+    text-decoration: none;
+  }
+
+  .filter-btn.active {
+    color: var(--clr-forest);
+    background: color-mix(in srgb, var(--clr-forest) 12%, transparent);
+    border-color: var(--clr-forest);
+    font-weight: 700;
+  }
+
+  .count {
+    font-size: 0.75rem;
+    opacity: 0.7;
+  }
+
+  .search-form {
+    display: flex;
+    gap: var(--space-xs);
+    width: 100%;
+  }
+
+  .search-input {
+    padding: 6px 14px;
+    border: 2px solid var(--clr-border);
+    border-radius: 999px;
+    font-size: 0.85rem;
+    background: var(--clr-bg);
+    color: var(--clr-text);
+    flex: 1;
+    min-width: 0;
+    font-family: var(--font-sans);
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: var(--clr-forest);
+  }
+
+  .search-btn {
+    padding: 6px 16px;
+    border-radius: 999px;
+    border: none;
+    background: var(--clr-forest);
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: var(--font-sans);
+  }
+</style>

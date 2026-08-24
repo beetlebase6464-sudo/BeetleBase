@@ -1,0 +1,132 @@
+---
+/**
+ * 図鑑一覧ページ /zukan
+ *
+ * prerender = false でSSR。URLパラメータをリクエストごとに読む。
+ * 表示ロジックは SpeciesCard / SpeciesFilter に委譲。
+ */
+export const prerender = false;
+
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import SpeciesCard from '@/components/species/SpeciesCard.astro';
+import SpeciesFilter from '@/components/species/SpeciesFilter.astro';
+import { fetchAllSpecies, parseFilterFromParams } from '@/lib/species';
+
+// URLパラメータをフィルターに変換
+const params = new URL(Astro.request.url).searchParams;
+const filter = parseFilterFromParams(params);
+
+// 全種取得（フィルターはクライアント側で絞り込む）
+// ※ 30種程度なら全取得してフロントで絞る方がシンプル。
+// 　 種が増えたらfetchSpecies(filter)に切り替えるだけでいい。
+const allSpecies = await fetchAllSpecies();
+
+// フィルター適用（サーバーサイドで絞り込み）
+const filtered = allSpecies.filter((s) => {
+  if (filter.category && s.category !== filter.category) return false;
+  if (filter.origin   && s.origin   !== filter.origin)   return false;
+  if (filter.query) {
+    const q = filter.query.toLowerCase();
+    return s.name_ja.toLowerCase().includes(q) ||
+           s.name_scientific.toLowerCase().includes(q);
+  }
+  return true;
+});
+
+// カウント（フィルターバー用）
+// 国産・外国産のカウントはカテゴリフィルターが有効なときそのカテゴリ内の数を返す
+const baseForOrigin = filter.category
+  ? allSpecies.filter(s => s.category === filter.category)
+  : allSpecies;
+
+const counts = {
+  all:      allSpecies.length,
+  kuwagata: allSpecies.filter(s => s.category === 'クワガタ').length,
+  kabuto:   allSpecies.filter(s => s.category === 'カブト').length,
+  domestic: baseForOrigin.filter(s => s.origin === '国産').length,
+  foreign:  baseForOrigin.filter(s => s.origin === '外国産').length,
+};
+
+// ページタイトル
+const titleParts: string[] = [];
+if (filter.category) titleParts.push(filter.category);
+if (filter.origin)   titleParts.push(filter.origin);
+if (filter.query)    titleParts.push(`"${filter.query}"`);
+const pageTitle = titleParts.length > 0 ? titleParts.join(' · ') : '図鑑';
+---
+
+<BaseLayout
+  title={pageTitle}
+  description="クワガタ・カブトムシの図鑑。国産・外国産の主要種を収録。規制情報・学名・飼育情報を掲載。"
+>
+  <div class="container zukan-page">
+    <div class="page-header">
+      <h1 class="page-title">昆虫図鑑</h1>
+      <p class="page-desc">
+        クワガタ・カブトムシの主要種を収録。
+        {filtered.length !== allSpecies.length
+          ? `${filtered.length}件ヒット（全${allSpecies.length}種）`
+          : `全${allSpecies.length}種`
+        }
+      </p>
+    </div>
+
+    <SpeciesFilter current={filter} counts={counts} />
+
+    {filtered.length > 0 ? (
+      <div class="species-grid">
+        {filtered.map(s => <SpeciesCard species={s} />)}
+      </div>
+    ) : (
+      <div class="empty-state">
+        <p>条件に一致する種が見つかりませんでした。</p>
+        <a href="/zukan" class="btn-reset">フィルターをリセット</a>
+      </div>
+    )}
+  </div>
+</BaseLayout>
+
+<style>
+  .zukan-page {
+    padding-block: var(--space-2xl);
+  }
+
+  .page-header {
+    margin-bottom: var(--space-xl);
+  }
+
+  .page-title {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: var(--space-xs);
+  }
+
+  .page-desc {
+    color: var(--clr-text-muted);
+    font-size: 0.9rem;
+  }
+
+  .species-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: var(--space-md);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: var(--space-3xl);
+    color: var(--clr-text-muted);
+  }
+
+  .btn-reset {
+    display: inline-block;
+    margin-top: var(--space-md);
+    padding: 8px 20px;
+    border-radius: 999px;
+    background: var(--clr-forest);
+    color: #fff;
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+</style>

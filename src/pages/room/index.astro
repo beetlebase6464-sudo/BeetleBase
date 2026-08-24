@@ -1,0 +1,336 @@
+---
+/**
+ * 飼育部屋 /room
+ * microCMS連携後: posts を getBlogPosts() に差し替えるだけ
+ */
+export const prerender = false;
+
+import BaseLayout from '@/layouts/BaseLayout.astro';
+
+const posts: {
+  id: string;
+  title: string;
+  publishedAt: string;
+  tags: string[];
+  excerpt: string;
+}[] = [];
+
+const myBeetles = [
+  { name: 'ミヤマクワガタ',     detail: '2ペア',   emoji: '🗡️' },
+  { name: 'カブトムシ',         detail: '♀',       emoji: '🪲' },
+  { name: 'コクワガタ',         detail: '♀',       emoji: '🗡️' },
+  { name: 'ニジイロクワガタ',   detail: '幼虫 3匹', emoji: '🌈' },
+  { name: 'ホペイオオクワガタ', detail: '♂',       emoji: '🗡️' },
+];
+
+const params = new URL(Astro.request.url).searchParams;
+const activeTag = params.get('tag') ?? '';
+
+const filtered = activeTag
+  ? posts.filter(p => p.tags.includes(activeTag))
+  : posts;
+
+const tagCounts: Record<string, number> = {};
+for (const b of myBeetles) {
+  tagCounts[b.name] = posts.filter(p => p.tags.includes(b.name)).length;
+}
+---
+
+<BaseLayout
+  title="飼育部屋"
+  description="管理人・彼方の飼育日誌。現在の飼育個体や日々の記録を気ままに綴ります。"
+>
+  <div class="container room-page">
+
+    <!-- ヘッダー -->
+    <div class="page-header">
+      <h1 class="page-title">🏠 飼育部屋</h1>
+      <p class="page-desc">管理人・彼方の飼育ブログ。現在の飼育状況や気づきを気ままに書いていきます。</p>
+    </div>
+
+    <!-- フィルター行 -->
+    <div class="filter-row">
+      <form method="get" action="/room" class="filter-form">
+        <label class="filter-label" for="tag-select">飼育個体で絞り込む</label>
+        <select
+          id="tag-select"
+          name="tag"
+          class="tag-select"
+          onchange="this.form.submit()"
+        >
+          <option value="" selected={activeTag === ''}>
+            すべての記事（{posts.length}件）
+          </option>
+          {myBeetles.map(b => (
+            <option value={b.name} selected={activeTag === b.name}>
+              {b.emoji} {b.name}（{b.detail}）― {tagCounts[b.name]}件
+            </option>
+          ))}
+        </select>
+        <noscript>
+          <button type="submit" class="filter-submit">絞り込む</button>
+        </noscript>
+      </form>
+
+      {activeTag && (
+        <a href="/room" class="filter-clear">✕ 解除</a>
+      )}
+    </div>
+
+    <!-- 記事一覧 -->
+    <section class="posts-section">
+      {filtered.length > 0 ? (
+        <div class="posts-list">
+          {filtered.map(post => (
+            <article class="post-card">
+              <div class="post-meta">
+                <time class="post-date">
+                  {new Date(post.publishedAt).toLocaleDateString('ja-JP')}
+                </time>
+                <div class="post-tags">
+                  {post.tags.map(tag => (
+                    <span class={`ptag${activeTag === tag ? ' ptag--on' : ''}`}>
+                      {myBeetles.find(b => b.name === tag)?.emoji} {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <h2 class="post-title">
+                <a href={`/room/${post.id}`}>{post.title}</a>
+              </h2>
+              <p class="post-excerpt">{post.excerpt}</p>
+              <a href={`/room/${post.id}`} class="post-more">続きを読む →</a>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <div class="empty-box">
+          <p class="empty-icon">✏️</p>
+          {activeTag ? (
+            <Fragment>
+              <p class="empty-title">
+                {myBeetles.find(b => b.name === activeTag)?.emoji} {activeTag} の記事はまだありません。
+              </p>
+              <a href="/room" class="btn-all">すべての記事を見る</a>
+            </Fragment>
+          ) : (
+            <Fragment>
+              <p class="empty-title">記事を準備中です。</p>
+              <p class="empty-sub">飼育ガイドや日々の記録など、少しずつ書いていきます。</p>
+            </Fragment>
+          )}
+        </div>
+      )}
+    </section>
+
+  </div>
+</BaseLayout>
+
+<style>
+  .room-page {
+    padding-block: var(--space-2xl);
+    max-width: 760px;
+  }
+
+  .page-header {
+    margin-bottom: var(--space-xl);
+  }
+
+  .page-title {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: var(--space-xs);
+  }
+
+  .page-desc {
+    color: var(--clr-text-muted);
+    font-size: .9rem;
+    line-height: 1.7;
+  }
+
+  /* ── フィルター行 ── */
+  .filter-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-xl);
+  }
+
+  .filter-form {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    flex: 1;
+  }
+
+  .filter-label {
+    font-size: .82rem;
+    font-weight: 700;
+    color: var(--clr-text-muted);
+    white-space: nowrap;
+  }
+
+  .tag-select {
+    flex: 1;
+    padding: 8px 14px;
+    border: 2px solid var(--clr-border);
+    border-radius: var(--radius-lg);
+    background: var(--clr-bg-card);
+    color: var(--clr-text);
+    font-size: .9rem;
+    font-family: var(--font-sans);
+    cursor: pointer;
+    appearance: auto;
+  }
+
+  .tag-select:focus {
+    outline: none;
+    border-color: var(--clr-forest);
+  }
+
+  .filter-submit {
+    padding: 8px 16px;
+    border-radius: var(--radius-lg);
+    border: none;
+    background: var(--clr-forest);
+    color: #fff;
+    font-size: .85rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: var(--font-sans);
+  }
+
+  .filter-clear {
+    font-size: .82rem;
+    font-weight: 700;
+    color: var(--clr-text-muted);
+    text-decoration: none;
+    white-space: nowrap;
+    padding: 6px 12px;
+    border: 2px solid var(--clr-border);
+    border-radius: var(--radius-lg);
+    transition: all 150ms;
+  }
+
+  .filter-clear:hover {
+    border-color: var(--clr-text-muted);
+    color: var(--clr-text);
+    text-decoration: none;
+  }
+
+  /* ── 記事一覧 ── */
+  .posts-section { }
+
+  .posts-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+  }
+
+  .post-card {
+    background: var(--clr-bg-card);
+    border: 2px solid var(--clr-border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+    transition: border-color 150ms;
+  }
+
+  .post-card:hover { border-color: var(--clr-forest); }
+
+  .post-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+    margin-bottom: var(--space-sm);
+  }
+
+  .post-date {
+    font-size: .78rem;
+    color: var(--clr-text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .post-tags {
+    display: flex;
+    gap: var(--space-xs);
+    flex-wrap: wrap;
+  }
+
+  .ptag {
+    font-size: .72rem;
+    font-weight: 700;
+    padding: 2px 9px;
+    border-radius: 999px;
+    background: var(--clr-bg-subtle);
+    color: var(--clr-text-muted);
+    border: 2px solid transparent;
+  }
+
+  .ptag--on {
+    color: var(--clr-forest);
+    background: color-mix(in srgb, var(--clr-forest) 12%, transparent);
+    border-color: var(--clr-forest);
+  }
+
+  .post-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    margin-bottom: var(--space-xs);
+    line-height: 1.4;
+  }
+
+  .post-title a { color: var(--clr-text); text-decoration: none; }
+  .post-title a:hover { color: var(--clr-forest); text-decoration: none; }
+
+  .post-excerpt {
+    font-size: .875rem;
+    color: var(--clr-text-muted);
+    line-height: 1.7;
+    margin-bottom: var(--space-md);
+  }
+
+  .post-more {
+    font-size: .82rem;
+    font-weight: 700;
+    color: var(--clr-forest);
+    text-decoration: none;
+  }
+
+  .post-more:hover { text-decoration: underline; }
+
+  /* ── 準備中 ── */
+  .empty-box {
+    background: var(--clr-bg-card);
+    border: 2px dashed var(--clr-border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-3xl);
+    text-align: center;
+  }
+
+  .empty-icon { font-size: 2rem; margin-bottom: var(--space-md); }
+
+  .empty-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--clr-text-muted);
+    margin-bottom: var(--space-xs);
+  }
+
+  .empty-sub {
+    font-size: .85rem;
+    color: var(--clr-text-muted);
+  }
+
+  .btn-all {
+    display: inline-block;
+    margin-top: var(--space-md);
+    padding: 8px 20px;
+    border-radius: 999px;
+    background: var(--clr-forest);
+    color: #fff;
+    font-size: .85rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+</style>

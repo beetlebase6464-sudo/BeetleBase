@@ -1,0 +1,164 @@
+---
+/**
+ * SpeciesCard
+ * 種コードマスターの1件を表示するカード。
+ * データ取得には関与しない。propsで受け取るだけ。
+ */
+import type { SpeciesMaster } from '@/types/database';
+
+interface Props {
+  species: SpeciesMaster;
+  /** 将来的に画像URLを渡せるようにするスロット。未指定ならプレースホルダー表示 */
+  imageUrl?: string;
+}
+
+const { species, imageUrl } = Astro.props;
+
+const hasRegulation = !!species.regulation_note;
+---
+
+<a href={`/zukan/${species.code.toLowerCase()}`} class="species-card">
+  <!-- 画像スロット: imageUrl が揃ったら差し替えるだけでいい -->
+  <div class="card-image">
+    {imageUrl
+      ? <img src={imageUrl} alt={species.name_ja} loading="lazy" />
+      : <div class="image-placeholder" aria-hidden="true">
+          <span>{species.category === 'クワガタ' ? '🦗' : '🪲'}</span>
+        </div>
+    }
+  </div>
+
+  <div class="card-header">
+    <span class={`badge-origin ${species.origin === '国産' ? 'domestic' : 'foreign'}`}>
+      {species.origin}
+    </span>
+    <span class="badge-category">{species.category}</span>
+  </div>
+
+  <div class="card-body">
+    <h3 class="species-name">{species.name_ja}</h3>
+    <p class="species-scientific">{species.name_scientific}</p>
+  </div>
+
+  <div class="card-footer">
+    {hasRegulation && (
+      <span class="regulation-badge" title={species.regulation_note ?? ''}>
+        ⚠ 規制情報あり
+      </span>
+    )}
+    <span class="species-code">{species.code}</span>
+  </div>
+</a>
+
+<style>
+  /* 画像エリア */
+  .card-image {
+    border-radius: calc(var(--radius-xl) - 4px);
+    overflow: hidden;
+    background: var(--clr-bg-subtle);
+    aspect-ratio: 4 / 3;
+    margin-bottom: var(--space-sm);
+  }
+
+  .card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    opacity: 0.3;
+  }
+
+  .species-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    padding: var(--space-lg);
+    background: var(--clr-bg-card);
+    border: 2px solid var(--clr-border);
+    border-radius: var(--radius-xl);
+    text-decoration: none;
+    color: inherit;
+    transition: all 200ms ease;
+  }
+
+  .species-card:hover {
+    border-color: var(--clr-forest);
+    box-shadow: 0 4px 16px color-mix(in srgb, var(--clr-forest) 10%, transparent);
+    transform: translateY(-2px);
+    text-decoration: none;
+  }
+
+  .card-header {
+    display: flex;
+    gap: var(--space-xs);
+  }
+
+  .badge-origin,
+  .badge-category {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+
+  .badge-origin.domestic {
+    background: color-mix(in srgb, var(--clr-forest) 15%, transparent);
+    color: var(--clr-forest);
+  }
+
+  .badge-origin.foreign {
+    background: color-mix(in srgb, var(--clr-amber) 15%, transparent);
+    color: var(--clr-amber-muted);
+  }
+
+  .badge-category {
+    background: var(--clr-bg-subtle);
+    color: var(--clr-text-muted);
+  }
+
+  .card-body {
+    flex: 1;
+  }
+
+  .species-name {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 2px;
+    color: var(--clr-text);
+  }
+
+  .species-scientific {
+    font-style: italic;
+    font-size: 0.78rem;
+    color: var(--clr-text-muted);
+    line-height: 1.4;
+  }
+
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: var(--space-xs);
+  }
+
+  .regulation-badge {
+    font-size: 0.7rem;
+    color: var(--clr-warning);
+    font-weight: 600;
+  }
+
+  .species-code {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--clr-text-muted);
+    letter-spacing: 0.05em;
+  }
+</style>

@@ -1,0 +1,443 @@
+---
+/**
+ * 種別詳細ページ /zukan/[code]
+ *
+ * getStaticPaths で全種を静的生成する。
+ * データが増えたら fetchAllSpecies() → fetchSpeciesByCode() に切り替えるだけでいい。
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { fetchAllSpecies } from '@/lib/species';
+import type { SpeciesMaster } from '@/types/database';
+
+export async function getStaticPaths() {
+  const all = await fetchAllSpecies();
+  return all.map((s) => {
+    const related = all
+      .filter((r) => r.category === s.category && r.code !== s.code)
+      .slice(0, 6);
+    return {
+      params: { code: s.code.toLowerCase() },
+      props: { species: s, related },
+    };
+  });
+}
+
+interface Props {
+  species: SpeciesMaster;
+  related: SpeciesMaster[];
+}
+
+const { species, related } = Astro.props;
+
+const hasRegulation = !!(species.regulation_note || species.regulation_sources?.length);
+const categoryEmoji = species.category === 'クワガタ' ? '🗡️' : '🪲';
+---
+
+<BaseLayout
+  title={species.name_ja}
+  description={`${species.name_ja}（${species.name_scientific}）の図鑑ページ。産地・規制情報・関連種を掲載。`}
+>
+  <div class="container detail-page">
+
+    <!-- パンくず -->
+    <nav class="breadcrumb" aria-label="パンくず">
+      <a href="/zukan">図鑑</a>
+      <span aria-hidden="true">›</span>
+      <span>{species.name_ja}</span>
+    </nav>
+
+    <!-- メインカード -->
+    <div class="main-card">
+
+      <!-- 画像エリア -->
+      <div class="image-area">
+        <div class="image-placeholder" aria-hidden="true">
+          <span class="placeholder-emoji">{categoryEmoji}</span>
+        </div>
+        <!-- imageUrl が決まったら ↑ を <img> に差し替えるだけでいい -->
+      </div>
+
+      <!-- 詳細情報 -->
+      <div class="detail-info">
+        <!-- バッジ -->
+        <div class="badge-row">
+          <span class={`badge-origin ${species.origin === '国産' ? 'domestic' : 'foreign'}`}>
+            {species.origin}
+          </span>
+          <span class="badge-category">{species.category}</span>
+          {hasRegulation && (
+            <span class="badge-regulation">⚠ 規制あり</span>
+          )}
+        </div>
+
+        <!-- 名前 -->
+        <h1 class="name-ja">{species.name_ja}</h1>
+        <p class="name-scientific">{species.name_scientific}</p>
+
+        <!-- 基本情報テーブル -->
+        <dl class="info-table">
+          <div class="info-row">
+            <dt>種コード</dt>
+            <dd class="mono">{species.code}</dd>
+          </div>
+          <div class="info-row">
+            <dt>カテゴリ</dt>
+            <dd>{species.category}</dd>
+          </div>
+          <div class="info-row">
+            <dt>産地区分</dt>
+            <dd>{species.origin}</dd>
+          </div>
+        </dl>
+
+        <!-- 規制情報 -->
+        {hasRegulation && (
+          <div class="regulation-box">
+            <div class="regulation-title">
+              <span class="regulation-icon">⚠</span> 規制・輸入制限情報
+            </div>
+            {species.regulation_note && (
+              <p class="regulation-note">{species.regulation_note}</p>
+            )}
+            {species.regulation_sources && species.regulation_sources.length > 0 && (
+              <ul class="regulation-sources">
+                {species.regulation_sources.map((src) => (
+                  <li>
+                    <a href={src.url} target="_blank" rel="noopener noreferrer">
+                      {src.name} ↗
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+
+    <!-- 関連種 -->
+    {related.length > 0 && (
+      <section class="related-section">
+        <h2 class="related-title">{species.category}の他の種</h2>
+        <div class="related-grid">
+          {related.map((r) => (
+            <a href={`/zukan/${r.code.toLowerCase()}`} class="related-card">
+              <div class="related-placeholder" aria-hidden="true">
+                {r.category === 'クワガタ' ? '🗡️' : '🪲'}
+              </div>
+              <div class="related-body">
+                <p class="related-name">{r.name_ja}</p>
+                <p class="related-scientific">{r.name_scientific}</p>
+              </div>
+              <span class={`related-origin ${r.origin === '国産' ? 'domestic' : 'foreign'}`}>
+                {r.origin}
+              </span>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+    <!-- 一覧へ戻る -->
+    <div class="back-row">
+      <a href={`/zukan?category=${encodeURIComponent(species.category)}`} class="back-link">
+        ← {species.category}の一覧に戻る
+      </a>
+    </div>
+
+  </div>
+</BaseLayout>
+
+<style>
+  .detail-page {
+    padding-block: var(--space-2xl);
+  }
+
+  /* ── パンくず ── */
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    color: var(--clr-text-muted);
+    margin-bottom: var(--space-xl);
+  }
+
+  .breadcrumb a {
+    color: var(--clr-forest);
+    text-decoration: none;
+  }
+
+  .breadcrumb a:hover { text-decoration: underline; }
+
+  /* ── メインカード ── */
+  .main-card {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: var(--space-2xl);
+    background: var(--clr-bg-card);
+    border: 2px solid var(--clr-border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-2xl);
+    margin-bottom: var(--space-2xl);
+  }
+
+  @media (max-width: 768px) {
+    .main-card {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* ── 画像エリア ── */
+  .image-area {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--clr-bg-subtle);
+    aspect-ratio: 4 / 3;
+  }
+
+  .image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .placeholder-emoji {
+    font-size: 5rem;
+    opacity: 0.2;
+  }
+
+  /* ── 詳細情報 ── */
+  .badge-row {
+    display: flex;
+    gap: var(--space-xs);
+    flex-wrap: wrap;
+    margin-bottom: var(--space-md);
+  }
+
+  .badge-origin,
+  .badge-category,
+  .badge-regulation {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+
+  .badge-origin.domestic {
+    background: color-mix(in srgb, var(--clr-forest) 15%, transparent);
+    color: var(--clr-forest);
+  }
+
+  .badge-origin.foreign {
+    background: color-mix(in srgb, var(--clr-amber) 15%, transparent);
+    color: var(--clr-amber-muted);
+  }
+
+  .badge-category {
+    background: var(--clr-bg-subtle);
+    color: var(--clr-text-muted);
+  }
+
+  .badge-regulation {
+    background: color-mix(in srgb, var(--clr-warning) 15%, transparent);
+    color: var(--clr-warning);
+  }
+
+  .name-ja {
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: var(--space-xs);
+  }
+
+  .name-scientific {
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--clr-text-muted);
+    margin-bottom: var(--space-xl);
+    line-height: 1.5;
+  }
+
+  /* ── 基本情報テーブル ── */
+  .info-table {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--clr-border);
+    border: 2px solid var(--clr-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    margin-bottom: var(--space-lg);
+  }
+
+  .info-row {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    background: var(--clr-bg-card);
+  }
+
+  .info-row dt,
+  .info-row dd {
+    padding: 10px 14px;
+    font-size: 0.875rem;
+  }
+
+  .info-row dt {
+    background: var(--clr-bg-subtle);
+    font-weight: 700;
+    color: var(--clr-text-muted);
+    font-size: 0.78rem;
+  }
+
+  .mono {
+    font-family: var(--font-mono);
+    letter-spacing: 0.05em;
+  }
+
+  /* ── 規制情報ボックス ── */
+  .regulation-box {
+    background: color-mix(in srgb, var(--clr-warning) 8%, transparent);
+    border: 2px solid color-mix(in srgb, var(--clr-warning) 30%, transparent);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+  }
+
+  .regulation-title {
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: var(--clr-warning);
+    margin-bottom: var(--space-sm);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .regulation-note {
+    font-size: 0.875rem;
+    line-height: 1.7;
+    color: var(--clr-text);
+    margin-bottom: var(--space-sm);
+  }
+
+  .regulation-sources {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .regulation-sources a {
+    font-size: 0.78rem;
+    color: var(--clr-forest);
+    text-decoration: none;
+  }
+
+  .regulation-sources a:hover { text-decoration: underline; }
+
+  /* ── 関連種 ── */
+  .related-section {
+    margin-bottom: var(--space-2xl);
+  }
+
+  .related-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    margin-bottom: var(--space-md);
+  }
+
+  .related-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: var(--space-sm);
+  }
+
+  .related-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--clr-bg-card);
+    border: 2px solid var(--clr-border);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    color: inherit;
+    transition: all 150ms ease;
+  }
+
+  .related-card:hover {
+    border-color: var(--clr-forest);
+    transform: translateY(-1px);
+    text-decoration: none;
+  }
+
+  .related-placeholder {
+    font-size: 1.4rem;
+    opacity: 0.4;
+    flex-shrink: 0;
+  }
+
+  .related-body { flex: 1; min-width: 0; }
+
+  .related-name {
+    font-size: 0.82rem;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .related-scientific {
+    font-size: 0.68rem;
+    font-style: italic;
+    color: var(--clr-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .related-origin {
+    font-size: 0.62rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 999px;
+    flex-shrink: 0;
+  }
+
+  .related-origin.domestic {
+    background: color-mix(in srgb, var(--clr-forest) 12%, transparent);
+    color: var(--clr-forest);
+  }
+
+  .related-origin.foreign {
+    background: color-mix(in srgb, var(--clr-amber) 12%, transparent);
+    color: var(--clr-amber-muted);
+  }
+
+  /* ── 戻るリンク ── */
+  .back-row {
+    text-align: center;
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 20px;
+    border-radius: 999px;
+    border: 2px solid var(--clr-border);
+    color: var(--clr-text-muted);
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 150ms ease;
+  }
+
+  .back-link:hover {
+    border-color: var(--clr-forest);
+    color: var(--clr-forest);
+    text-decoration: none;
+  }
+</style>
